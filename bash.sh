@@ -6,41 +6,54 @@ if [ $# -lt 1 ]; then
   exit 1
 fi
 
-url="$1"
+host="$1"
+
 
 #check to see if this is a subdomain
-dot_count=$(grep -o '\.' <<< $url | wc -l)
+dot_count=$(grep -o '\.' <<< $host | wc -l)
 
 #commands to run on the asset 
-commands=("nmap -Pn -sT -p- -A" "testssl" "dig caa" "sublist3r -n -b -v -t 5 -d")
+commands=("nmap -Pn -sT -p- -A" "testssl" "dig caa" "sublist3r -b -n -v -t 5 -d")
+commandsHTTP=("jsleak -l -s -c 20 -e")
 
 exec () {
-  url="$1"
   for command in "${commands[@]}"; do
-    echo "Command: $command $url"
-    output="$($command $url)"
-    echo "$output" | tee -a $url
-    echo "-----------------------++++++++++++++++++++++++-------------------------" | tee -a $url
+    echo "Command: $command $host"
+    output="$($command $host)"
+    echo "$output" | tee -a $host
+    echo "-----------------------++++++++++++++++++++++++-------------------------" | tee -a $host
+  done
+  for command in "${commandsHTTP[@]}"; do
+    urlHTTP="https://$host"
+    urlHTTPS="http://$host"
+    echo "Command: $command $urlHTTP"
+    output="$(echo $urlHTTP | $commandsHTTP)"
+    echo "$output" | tee -a $host
+    echo "-----------------------++++++++++++++++++++++++-------------------------" | tee -a $host
+    echo "Command: $command $urlHTTPS"
+    output="$(echo $urlHTTPS | $commandsHTTP )"
+    echo "$output" | tee -a $host
+    echo "-----------------------++++++++++++++++++++++++-------------------------" | tee -a $host
   done
 }
 
 reduct () {
-  url="$1"
-  url="$(echo $url | sed 's/^[^.]*\.//' )"
+  host="$1"
+  host="$(echo $host | sed 's/^[^.]*\.//' )"
 }
 
 #run the commands on the main URL
-exec $url
+exec $host
 
 #check to see if it is a subdomain and run the same commands on the main domain
 if [ "$dot_count" -ge 2 ]; then
-  reduct $url
-  echo $url
-  exec $url
+  reduct $host
+  echo $host
+  exec $host
   if [ "$dot_count" -ge 3 ]; then
     reduct $url
-    echo $url
-    exec $url
+    echo $host
+    exec $host
   else
     echo "Input does not contain three dots."
   fi
