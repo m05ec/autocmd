@@ -14,7 +14,7 @@ dot_count=$(grep -o '\.' <<< $host | wc -l)
 
 #commands to run on the asset 
 commands=("nmap -Pn -sT -p- -A" "testssl" "dig caa" "sublist3r -b -n -v -t 5 -d")
-commandsHTTP=("jsleak -l -s -c 20 -e")
+commandsHTTP=("jsleak -l -s -c 20 -e" "curl -kvL -X TRACE")
 
 exec () {
   for command in "${commands[@]}"; do
