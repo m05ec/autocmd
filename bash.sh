@@ -1,5 +1,12 @@
 #!/bin/bash 
+# Function to handle Ctrl+C
+ctrl_c() {
+    echo "Ctrl+C pressed. Exiting..."
+    exit 1
+}
 
+# Trap the SIGINT signal (Ctrl+C) and call ctrl_c function
+trap ctrl_c SIGINT
 # check if the argument is provided
 if [ $# -lt 1 ]; then
   echo "Please provide a Host name. Usage: $0 <url>"
